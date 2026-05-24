@@ -1,8 +1,6 @@
 ﻿# ГНЕЗДО - Платформа поддержки родителей
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]()
-[![.NET](https://img.shields.io/badge/.NET-8.0-blue)]()
-[![Docker](https://img.shields.io/badge/docker-ready-blue)]()
+Docker: https://hub.docker.com/r/olegsplaytv/gnezdo
 
 **ГНЕЗДО** - это цифровое пространство для родителей, где они могут получить поддержку, полезную информацию и найти специалистов.
 
@@ -42,3 +40,8 @@ dotnet ef database update
 
 # Запустить приложение
 dotnet run
+
+Автор:
+ФИО: Штыканов Олег Сергеевич
+Группа: ББСО-01-24
+---
