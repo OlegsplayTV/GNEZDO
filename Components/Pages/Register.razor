@@ -1,0 +1,169 @@
+﻿@page "/register"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components
+@using GNEZDO.Models
+@inject UserManager<User> UserManager
+@inject NavigationManager Navigation
+
+<PageTitle>Регистрация — ГНЕЗДО</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                    <h2 class="card-title text-center mb-4">👤 Регистрация</h2>
+
+                    @if (!string.IsNullOrEmpty(SuccessMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @SuccessMessage
+                            <button type="button" class="btn-close" @onclick="() => SuccessMessage = null" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @ErrorMessage
+                            <button type="button" class="btn-close" @onclick="() => ErrorMessage = null" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <EditForm Model="@RegisterModel" OnValidSubmit="HandleRegister" FormName="register-form" data-enhance="false">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger small mb-3" />
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="firstName" class="form-label">Имя</label>
+                                <InputText @bind-Value="RegisterModel.FirstName"
+                                           class="form-control"
+                                           id="firstName"
+                                           placeholder="Введите имя" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lastName" class="form-label">Фамилия</label>
+                                <InputText @bind-Value="RegisterModel.LastName"
+                                           class="form-control"
+                                           id="lastName"
+                                           placeholder="Введите фамилию" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <InputText @bind-Value="RegisterModel.Email"
+                                       class="form-control"
+                                       id="email"
+                                       type="email"
+                                       placeholder="your@email.com" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Пароль</label>
+                            <InputText @bind-Value="RegisterModel.Password"
+                                       class="form-control"
+                                       id="password"
+                                       type="password"
+                                       placeholder="Минимум 6 символов" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="confirmPassword" class="form-label">Подтвердите пароль</label>
+                            <InputText @bind-Value="RegisterModel.ConfirmPassword"
+                                       class="form-control"
+                                       id="confirmPassword"
+                                       type="password"
+                                       placeholder="Повторите пароль" />
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Зарегистрироваться</button>
+                        </div>
+                    </EditForm>
+
+                    <hr class="my-4" />
+
+                    <div class="text-center text-muted">
+                        <p class="mb-0">Уже есть аккаунт? <a href="/login" class="text-decoration-none">Войти</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm(FormName = "register-form")]
+    private RegisterDto RegisterModel { get; set; } = new();
+    private string? ErrorMessage;
+    private string? SuccessMessage;
+
+    private async Task HandleRegister()
+    {
+        ErrorMessage = null;
+        SuccessMessage = null;
+
+        if (RegisterModel.Password != RegisterModel.ConfirmPassword)
+        {
+            ErrorMessage = "Пароли не совпадают";
+            return;
+        }
+
+        try
+        {
+            var user = new User
+            {
+                UserName = RegisterModel.Email,
+                Email = RegisterModel.Email,
+                FirstName = RegisterModel.FirstName,
+                LastName = RegisterModel.LastName,
+                EmailConfirmed = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var result = await UserManager.CreateAsync(user, RegisterModel.Password);
+
+            if (result.Succeeded)
+            {
+                SuccessMessage = "✅ Регистрация успешна! Теперь войдите в систему.";
+                RegisterModel = new();
+                Navigation.NavigateTo("/login?registered=true", forceLoad: true);
+            }
+            else
+            {
+                ErrorMessage = string.Join("; ", result.Errors.Select(e => e.Description));
+            }
+        }
+        catch (Exception ex) when (ex is not NavigationException)
+        {
+            Console.WriteLine($"[Register] Error: {ex.Message}");
+            ErrorMessage = $"Ошибка сервера: {ex.Message}";
+        }
+    }
+
+    public class RegisterDto
+    {
+        [Required(ErrorMessage = "Имя обязательно")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "От 2 до 50 символов")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Фамилия обязательна")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "От 2 до 50 символов")]
+        public string LastName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email обязателен")]
+        [EmailAddress(ErrorMessage = "Некорректный формат email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Пароль обязателен")]
+        [MinLength(6, ErrorMessage = "Минимум 6 символов")]
+        public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Подтвердите пароль")]
+        [Compare("Password", ErrorMessage = "Пароли не совпадают")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+}

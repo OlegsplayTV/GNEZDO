@@ -1,0 +1,142 @@
+﻿@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components
+@using GNEZDO.Models
+@inject SignInManager<User> SignInManager
+@inject NavigationManager Navigation
+
+<PageTitle>Вход — ГНЕЗДО</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                    <h2 class="card-title text-center mb-4">🔐 Вход</h2>
+
+                    @if (!string.IsNullOrEmpty(SuccessMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @SuccessMessage
+                            <button type="button" class="btn-close" @onclick="() => SuccessMessage = null" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @ErrorMessage
+                            <button type="button" class="btn-close" @onclick="() => ErrorMessage = null" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <EditForm Model="@LoginModel" OnValidSubmit="HandleLogin" FormName="login-form" data-enhance="false">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger small mb-3" />
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <InputText @bind-Value="LoginModel.Email"
+                                       class="form-control"
+                                       id="email"
+                                       type="email"
+                                       placeholder="your@email.com" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Пароль</label>
+                            <InputText @bind-Value="LoginModel.Password"
+                                       class="form-control"
+                                       id="password"
+                                       type="password"
+                                       placeholder="Введите пароль" />
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Войти</button>
+                        </div>
+                    </EditForm>
+
+                    <hr class="my-4" />
+
+                    <div class="text-center text-muted">
+                        <p class="mb-0">Ещё нет аккаунта? <a href="/register" class="text-decoration-none">Зарегистрироваться</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm(FormName = "login-form")]
+    private LoginDto LoginModel { get; set; } = new();
+    private string? ErrorMessage;
+    private string? SuccessMessage;
+
+    [SupplyParameterFromQuery(Name = "registered")]
+    public bool IsRegistered { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (IsRegistered)
+        {
+            SuccessMessage = "✅ Регистрация прошла успешно! Пожалуйста, войдите в систему.";
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        // Сбрасываем предыдущие ошибки
+        ErrorMessage = null;
+
+        try
+        {
+            // Пытаемся войти через SignInManager
+            var result = await SignInManager.PasswordSignInAsync(
+                LoginModel.Email,
+                LoginModel.Password,
+                isPersistent: false, // Не запоминаем пользователя (сессия до закрытия браузера)
+                lockoutOnFailure: false); // Не блокируем аккаунт при неверных попытках
+
+            if (result.Succeeded)
+            {
+                // Успешный вход — перенаправляем на главную
+                // forceLoad: true гарантирует полную перезагрузку страницы
+                Navigation.NavigateTo("/", forceLoad: true);
+            }
+            else if (result.IsLockedOut)
+            {
+                // Аккаунт заблокирован (если включена блокировка)
+                ErrorMessage = "Аккаунт заблокирован. Попробуйте позже.";
+            }
+            else if (result.IsNotAllowed)
+            {
+                // Вход не разрешён (например, email не подтверждён)
+                ErrorMessage = "Вход не разрешён. Подтвердите email.";
+            }
+            else
+            {
+                // Неверные учётные данные
+                ErrorMessage = "Неверный email или пароль.";
+            }
+        }
+        catch (Exception ex) when (ex is not NavigationException)
+        {
+            Console.WriteLine($"[Login] Error: {ex.Message}");
+            ErrorMessage = $"Ошибка сервера: {ex.Message}";
+        }
+    }
+
+    // DTO для формы входа с валидацией
+    public class LoginDto
+    {
+        [Required(ErrorMessage = "Email обязателен")]
+        [EmailAddress(ErrorMessage = "Некорректный формат email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Пароль обязателен")]
+        public string Password { get; set; } = string.Empty;
+    }
+}

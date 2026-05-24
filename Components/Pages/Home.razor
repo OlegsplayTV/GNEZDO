@@ -1,0 +1,255 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Authorization
+@inject IArticleService ArticleService
+@inject IForumService ForumService
+@inject ISpecialistService SpecialistService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+
+<PageTitle>ГНЕЗДО — Пространство поддержки для родителей</PageTitle>
+
+<!-- === ГЕРОЙ-БЛОК === -->
+<div class="hero-section">
+    <div class="hero-content">
+        <a href="/" class="logo-link">
+            <img src="/img/pic1.png" alt="ГНЕЗДО" class="logo-img" />
+        </a>
+        <p class="hero-tagline">Место, где растут не только дети</p>
+        <p class="hero-subtitle">Поддержка родителей на каждом этапе</p>
+
+        <div class="hero-description">
+            <p>Платформа, где вы найдёте:</p>
+            <ul class="hero-features">
+                <li>Проверенную информацию о психологии и развитии детей</li>
+                <li>Безопасное пространство для общения с другими родителями</li>
+                <li>Возможность записаться к квалифицированным специалистам</li>
+            </ul>
+        </div>
+
+        <div class="hero-cta">
+            <a href="articles" class="btn btn-primary btn-lg">Начать читать статьи</a>
+            <AuthorizeView>
+                <NotAuthorized>
+                    <a href="register" class="btn btn-outline btn-lg">Присоединиться</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </div>
+</div>
+
+<!-- === ДЛЯ КОГО ЭТОТ ПРОЕКТ === -->
+<div class="target-audience section">
+    <h2 class="section-title">Для кого создано ГНЕЗДО</h2>
+    <div class="audience-grid">
+        <div class="audience-card">
+            <div class="audience-icon">👩‍🍼</div>
+            <h3>Мамы в декрете (25-35 лет)</h3>
+            <p>Часто остаетесь без общения, выгораете, теряете себя. Здесь вы найдете поддержку и единомышленниц.</p>
+        </div>
+
+        <div class="audience-card">
+            <div class="audience-icon">👨‍👧</div>
+            <h3>Папы-одиночки</h3>
+            <p>Нуждаетесь в поддержке, но стесняетесь просить. У нас можно получить помощь без осуждения.</p>
+        </div>
+
+        <div class="audience-card">
+            <div class="audience-icon">👶</div>
+            <h3>Молодые родители</h3>
+            <p>Без опоры на старшее поколение? Мы поможем найти ответы на все вопросы о воспитании.</p>
+        </div>
+
+        <div class="audience-card">
+            <div class="audience-icon">‍‍🧑</div>
+            <h3>Родители подростков</h3>
+            <p>Не знаете, как справиться с переходным возрастом? Специалисты помогут разобраться.</p>
+        </div>
+    </div>
+</div>
+
+<!-- === ОСНОВНЫЕ ВОЗМОЖНОСТИ === -->
+<div class="features section">
+    <h2 class="section-title">Что вы получите</h2>
+
+    <div class="features-grid">
+        <!-- Статьи -->
+        <div class="feature-block">
+            <div class="feature-header">
+                <div class="feature-icon">📚</div>
+                <h3>Полезные статьи</h3>
+            </div>
+            <div class="feature-body">
+                <p>Проверенная информация от экспертов:</p>
+                <ul>
+                    <li>Психология родительства</li>
+                    <li>Развитие детей по возрастам</li>
+                    <li>Забота о себе для мам и пап</li>
+                    <li>Практические советы и техники</li>
+                </ul>
+                <a href="articles" class="btn btn-primary">Читать статьи →</a>
+            </div>
+        </div>
+
+        <!-- Форум -->
+        <div class="feature-block">
+            <div class="feature-header">
+                <div class="feature-icon">💬</div>
+                <h3>Форум поддержки</h3>
+            </div>
+            <div class="feature-body">
+                <p>Безопасное пространство для общения:</p>
+                <ul>
+                    <li>Делитесь опытом с другими родителями</li>
+                    <li>Задавайте вопросы без страха осуждения</li>
+                    <li>Находите друзей и поддержку</li>
+                    <li>Без токсичных комментариев</li>
+                </ul>
+                <a href="forum" class="btn btn-primary">Перейти на форум →</a>
+            </div>
+        </div>
+
+        <!-- Специалисты -->
+        <div class="feature-block">
+            <div class="feature-header">
+                <div class="feature-icon">👨‍⚕️</div>
+                <h3>Специалисты</h3>
+            </div>
+            <div class="feature-body">
+                <p>Профессиональная помощь:</p>
+                <ul>
+                    <li>Детские и семейные психологи</li>
+                    <li>Проверенные специалисты</li>
+                    <li>Удобная запись на консультацию</li>
+                    <li>Индивидуальный подход</li>
+                </ul>
+                <a href="specialists" class="btn btn-primary">Найти специалиста →</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- === ПОЧЕМУ МЫ === -->
+<div class="uniqueness section">
+    <h2 class="section-title">Почему ГНЕЗДО — это особенное место</h2>
+
+    <div class="uniqueness-content">
+        <div class="uniqueness-item">
+            <div class="uniqueness-number">01</div>
+            <div class="uniqueness-text">
+                <h3>Мы начинаем с заботы о родителе</h3>
+                <p>Большинство проектов сразу про детей. Мы верим: счастливый родитель = счастливый ребёнок. Поэтому сначала помогаем вам.</p>
+            </div>
+        </div>
+
+        <div class="uniqueness-item">
+            <div class="uniqueness-number">02</div>
+            <div class="uniqueness-text">
+                <h3>Проект поэтапный</h3>
+                <p>Цифровое родительское гнёздо → Цифровое детское гнёздо → Офлайн-пространство. Мы растём вместе с вами!</p>
+            </div>
+        </div>
+
+        <div class="uniqueness-item">
+            <div class="uniqueness-number">03</div>
+            <div class="uniqueness-text">
+                <h3>Безопасное пространство</h3>
+                <p>Ответы на вопросы без Google и форумов с токсичными комментариями. Только поддержка и понимание.</p>
+            </div>
+        </div>
+
+        <div class="uniqueness-item">
+            <div class="uniqueness-number">04</div>
+            <div class="uniqueness-text">
+                <h3>Реальная команда</h3>
+                <p>У нас есть опытные специалисты и чёткие планы на развитие. Мы здесь надолго!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- === ПОСЛЕДНИЕ СТАТЬИ === -->
+<div class="recent-articles section">
+    <h2 class="section-title">Последние статьи</h2>
+
+    @if (isLoading)
+    {
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Загружаем полезные материалы...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="error-state">
+            <div class="alert alert-warning">
+                <p>⚠️ @errorMessage</p>
+                <p><small>Страницы навигации работают — статьи можно добавить позже.</small></p>
+            </div>
+        </div>
+    }
+    else if (articles != null && articles.Any())
+    {
+        <div class="articles-grid">
+            @foreach (var article in articles.Take(3))
+            {
+                <article class="article-card">
+                    <div class="article-content">
+                        <h4>@article.Title</h4>
+                        <p class="article-summary">@article.Summary</p>
+                        <div class="article-meta">
+                            <span class="article-author">✍️ @article.Author</span>
+                            <span class="article-date">@article.PublishedAt.ToString("dd.MM.yyyy")</span>
+                        </div>
+                    </div>
+                    <a href="articles/@article.Id" class="btn btn-link">Читать далее →</a>
+                </article>
+            }
+        </div>
+
+        <div class="articles-cta">
+            <a href="articles" class="btn btn-primary btn-lg">Все статьи</a>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <p><em>Статей пока нет. Добавьте первые через админ-панель.</em></p>
+            <a href="articles" class="btn btn-outline">Перейти к статьям</a>
+        </div>
+    }
+</div>
+
+<!-- === ПРИЗЫВ К ДЕЙСТВИЮ === -->
+<div class="cta-section">
+    <div class="cta-content">
+        <h2>Готовы начать?</h2>
+        <p>Присоединяйтесь к сообществу заботливых родителей</p>
+        <div class="cta-buttons">
+            <a href="register" class="btn btn-primary btn-lg">Создать аккаунт</a>
+            <a href="about" class="btn btn-outline btn-lg">Узнать больше о проекте</a>
+        </div>
+    </div>
+</div>
+
+@code {
+    private IEnumerable<Article>? articles;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            articles = await ArticleService.GetAllPublishedAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Home] Error loading articles: {ex.Message}");
+            errorMessage = "Не удалось загрузить статьи. Проверьте подключение к базе данных.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

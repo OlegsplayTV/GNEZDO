@@ -1,0 +1,162 @@
+﻿@page "/articles"
+@inject IArticleService ArticleService
+@inject NavigationManager Navigation
+
+<PageTitle>Статьи — ГНЕЗДО</PageTitle>
+
+<!-- === ЗАГОЛОВОК СТРАНИЦЫ === -->
+<div class="page-header">
+    <h1>📚 Полезные статьи</h1>
+    <p class="lead">Проверенная информация о психологии, развитии детей и заботе о себе</p>
+</div>
+
+<!-- === ФИЛЬТРЫ ПО КАТЕГОРИЯМ === -->
+<div class="filters-bar mb-4">
+    <div class="filters-container">
+        @if (categories != null)
+        {
+            <div class="category-filters">
+                <button class="filter-btn @(selectedCategory == null ? "active" : "")"
+                        @onclick="() => SelectCategory(null)">
+                    📖 Все статьи
+                </button>
+                @foreach (var category in categories)
+                {
+                    <button class="filter-btn @(selectedCategory == category.Id ? "active" : "")"
+                            @onclick="() => SelectCategory(category.Id)"
+                            title="@category.Description">
+                        @category.Name
+                    </button>
+                }
+            </div>
+        }
+        <div class="results-count">
+            @filteredArticles?.Count() статей найдено
+        </div>
+    </div>
+</div>
+
+<!-- === СЕТКА СТАТЕЙ === -->
+<div class="articles-grid">
+    @if (isLoading)
+    {
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Загружаем полезные материалы...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="error-state">
+            <div class="alert alert-warning">
+                <p>⚠️ @errorMessage</p>
+                <p><small>Попробуйте обновить страницу или вернитесь позже.</small></p>
+            </div>
+        </div>
+    }
+    else if (filteredArticles != null && filteredArticles.Any())
+    {
+        @foreach (var article in filteredArticles)
+        {
+            <article class="article-card block">
+                <div class="article-header">
+                    <h3 class="article-title">@article.Title</h3>
+                    <span class="article-category-badge">@article.Category?.Name</span>
+                </div>
+
+                <div class="article-body">
+                    <p class="article-summary">@article.Summary</p>
+
+                    <div class="article-meta">
+                        <span class="article-author">✍️ @article.Author</span>
+                        <span class="article-date">📅 @article.PublishedAt.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("ru-RU"))</span>
+                    </div>
+                </div>
+
+                <div class="article-footer">
+                    <!-- ❌ УБРАНА ССЫЛКА — теперь кнопка, а не <a> -->
+                    <button class="btn btn-outline btn-block disabled" disabled>
+                        Читать полностью →
+                    </button>
+                </div>
+            </article>
+        }
+    }
+    else
+    {
+        <div class="empty-state">
+            <p><em>Статей по выбранным критериям не найдено.</em></p>
+            <button @onclick="() => SelectCategory(null)" class="btn btn-outline">Показать все статьи</button>
+        </div>
+    }
+</div>
+
+@code {
+    private IEnumerable<Article>? articles;
+    private IEnumerable<Article>? filteredArticles;
+    private IEnumerable<Category>? categories;
+    private int? selectedCategory;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Загружаем статьи
+            articles = await ArticleService.GetAllPublishedAsync();
+            filteredArticles = articles ?? Enumerable.Empty<Article>();
+
+            // Загружаем категории (в реальном приложении — через сервис)
+            categories = new List<Category>
+            {
+                new Category { Id = 1, Name = "Психология", Description = "Психологическая поддержка родителей" },
+                new Category { Id = 2, Name = "Развитие детей", Description = "Всё о развитии ребёнка" },
+                new Category { Id = 3, Name = "Здоровье", Description = "Забота о здоровье" },
+                new Category { Id = 4, Name = "Образование", Description = "Образование и обучение" }
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Articles] Error: {ex.Message}");
+            errorMessage = "Не удалось загрузить статьи. Проверьте подключение к базе данных.";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged(); // ← КРИТИЧНО: обновляем UI сразу после загрузки
+        }
+    }
+
+    private void SelectCategory(int? categoryId)
+    {
+        selectedCategory = categoryId;
+        isLoading = true;
+
+        try
+        {
+            if (categoryId == null)
+            {
+                filteredArticles = articles ?? Enumerable.Empty<Article>();
+            }
+            else
+            {
+                // Защита от null + безопасная фильтрация
+                filteredArticles = (articles ?? Enumerable.Empty<Article>())
+                    .Where(a => a.CategoryId == categoryId.Value);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Articles] Filter error: {ex.Message}");
+            errorMessage = "Ошибка при фильтрации статей.";
+            filteredArticles = Enumerable.Empty<Article>();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged(); // ← КРИТИЧНО: обновляем UI после фильтрации
+        }
+    }
+}
+

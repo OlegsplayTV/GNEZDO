@@ -1,0 +1,62 @@
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.sidebar {
+    background-image: linear-gradient(180deg, #6B9AC4 0%, #4A7C9D 70%);
+}
+
+.top-row {
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #d6d5d5;
+    justify-content: flex-end;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+}
+
+    .top-row .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #6B9AC4;
+        text-decoration: none;
+        margin-right: auto;
+    }
+
+    .top-row .auth-links {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .top-row a {
+        color: #333;
+        text-decoration: none;
+    }
+
+        .top-row a:hover {
+            text-decoration: underline;
+        }
+
+.btn-primary {
+    background-color: #6B9AC4;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+    .btn-primary:hover {
+        background-color: #4A7C9D;
+        text-decoration: none;
+        color: white;
+    }
+
+.content {
+    padding: 1.1rem 2rem 0 2rem;
+}

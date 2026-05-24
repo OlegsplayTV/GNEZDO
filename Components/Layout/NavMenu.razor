@@ -1,0 +1,51 @@
+﻿<header class="header">
+    <div class="header-container">
+        @* <a href="/" class="logo">ГНЕЗДО</a> *@
+
+        <a href="/" class="logo-link">
+            <img src="/img/logo.png" alt="ГНЕЗДО" class="logo-img" />
+        </a>
+
+        <ul class="nav-menu">
+            <li>
+                <NavLink href="" Match="NavLinkMatch.All" class="nav-link active">
+                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Главная
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="articles" class="nav-link">
+                    <span class="bi bi-journal-text" aria-hidden="true"></span> Статьи
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="forum" class="nav-link">
+                    <span class="bi bi-chat-dots" aria-hidden="true"></span> Форум
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="specialists" class="nav-link">
+                    <span class="bi bi-people" aria-hidden="true"></span> Специалисты
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="about" class="nav-link">
+                    <span class="bi bi-info-circle" aria-hidden="true"></span> О проекте
+                </NavLink>
+            </li>
+        </ul>
+
+        <div class="auth-links">
+            <AuthorizeView>
+                <Authorized>
+                    <span class="nav-username">👤 @context.User.Identity!.Name</span>
+                    <a href="/profile" class="btn-login">Профиль</a>
+                    <a href="/logout" class="btn-register">Выйти</a>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/login" class="btn-login">Вход</a>
+                    <a href="/register" class="btn-register">Регистрация</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </div>
+</header>

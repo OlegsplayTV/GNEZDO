@@ -1,0 +1,243 @@
+﻿@page "/forum"
+@inject IArticleService ArticleService
+@inject IForumService ForumService
+@inject ISpecialistService SpecialistService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+
+<PageTitle>Форум — ГНЕЗДО</PageTitle>
+
+<!-- === ЗАГОЛОВОК СТРАНИЦЫ === -->
+<div class="page-header">
+    <h1>💬 Форум поддержки</h1>
+    <p class="lead">Безопасное пространство для общения с другими родителями</p>
+</div>
+
+<!-- === СПИСОК ТЕМ ФОРУМА === -->
+@if (!showTopicDetail)
+{
+    <div class="forum-topics-grid">
+        @if (isLoading)
+        {
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Загружаем темы форума...</p>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-state">
+                <div class="alert alert-warning">
+                    <p>⚠️ @errorMessage</p>
+                </div>
+            </div>
+        }
+        else if (topics != null && topics.Any())
+        {
+            @foreach (var topic in topics)
+            {
+                <article class="topic-card block" @onclick="() => OpenTopic(topic.Id)">
+                    <div class="topic-header">
+                        <h3 class="topic-title">@topic.Title</h3>
+                        <span class="topic-posts-badge">💬 @topic.PostCount</span>
+                    </div>
+
+                    <div class="topic-body">
+                        <p class="topic-description">@topic.Description</p>
+
+                        <div class="topic-meta">
+                            <span class="topic-date">📅 @topic.CreatedAt.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("ru-RU"))</span>
+                        </div>
+                    </div>
+
+                    <div class="topic-footer">
+                        <span class="btn-link">Открыть тему →</span>
+                    </div>
+                </article>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <p><em>Тем форума пока нет. Будьте первым!</em></p>
+            </div>
+        }
+    </div>
+}
+
+<!-- === ДЕТАЛЬНЫЙ ПРОСМОТР ТЕМЫ === -->
+@if (showTopicDetail && currentTopic != null)
+{
+    <div class="topic-detail-view">
+        <!-- Шапка темы -->
+        <div class="topic-detail-header block">
+            <button @onclick="() => CloseTopic()" class="btn-back">← Назад к темам</button>
+            <h2 class="topic-detail-title">@currentTopic.Title</h2>
+            <p class="topic-detail-description">@currentTopic.Description</p>
+        </div>
+
+        <!-- Список сообщений -->
+        <div class="posts-list">
+            @if (postsLoading)
+            {
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Загружаем сообщения...</p>
+                </div>
+            }
+            else if (posts != null && posts.Any())
+            {
+                @foreach (var post in posts)
+                {
+                    <article class="post-card block">
+                        <div class="post-header">
+                            <div class="post-author">
+                                <span class="author-name">👤 @post.User?.FirstName @post.User?.LastName</span>
+                                <span class="author-date">📅 @post.CreatedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                            </div>
+                        </div>
+                        <div class="post-body">
+                            <p class="post-content">@post.Content</p>
+                        </div>
+                    </article>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <p><em>Сообщений пока нет. Будьте первым!</em></p>
+                </div>
+            }
+        </div>
+
+        <!-- Форма нового сообщения -->
+        <div class="new-post-form block">
+            <h3>✍️ Добавить сообщение</h3>
+
+            @if (!string.IsNullOrEmpty(postError))
+            {
+                <div class="alert alert-danger">@postError</div>
+            }
+
+            <EditForm Model="newPostDto" OnValidSubmit="HandleSubmitPost">
+                <DataAnnotationsValidator />
+
+                <div class="form-group">
+                    <InputTextArea @bind-Value="newPostDto.Content"
+                                   rows="4"
+                                   class="form-control"
+                                   placeholder="Напишите ваше сообщение..." />
+                    <ValidationMessage For="@(() => newPostDto.Content)" class="text-danger small" />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Отправить сообщение</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    private IEnumerable<ForumTopic>? topics;
+    private ForumTopic? currentTopic;
+    private IEnumerable<ForumPost>? posts;
+    private bool showTopicDetail = false;
+    private bool isLoading = true;
+    private bool postsLoading = false;
+    private string? errorMessage;
+    private string? postError;
+
+    private ForumPostDto newPostDto = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            topics = await ForumService.GetAllTopicsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Forum] Error: {ex.Message}");
+            errorMessage = "Не удалось загрузить темы форума.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OpenTopic(int topicId)
+    {
+        showTopicDetail = true;
+        postsLoading = true;
+
+        try
+        {
+            currentTopic = await ForumService.GetTopicByIdAsync(topicId);
+            if (currentTopic != null)
+            {
+                posts = await ForumService.GetPostsByTopicAsync(topicId);
+                newPostDto.ForumTopicId = topicId;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Forum] OpenTopic error: {ex.Message}");
+            errorMessage = "Ошибка при загрузке темы.";
+        }
+        finally
+        {
+            postsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CloseTopic()
+    {
+        showTopicDetail = false;
+        currentTopic = null;
+        posts = null;
+        newPostDto = new ForumPostDto();
+        postError = null;
+    }
+
+    private async Task HandleSubmitPost()
+    {
+        postError = null;
+
+        try
+        {
+            // В реальном приложении: получить ID из системы аутентификации
+            var userId = "current-user-id"; // TODO: заменить на auth
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                postError = "Для отправки сообщения необходимо войти в аккаунт.";
+                return;
+            }
+
+            // await ForumService.CreatePostAsync(newPostDto, userId);
+
+            // Очистить форму и обновить список
+            newPostDto.Content = "";
+            posts = await ForumService.GetPostsByTopicAsync(newPostDto.ForumTopicId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Forum] Post error: {ex.Message}");
+            postError = "Ошибка при отправке сообщения. Попробуйте позже.";
+        }
+    }
+}
+
+@code {
+    // DTO для нового сообщения
+    public class ForumPostDto
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Сообщение не может быть пустым")]
+        [System.ComponentModel.DataAnnotations.StringLength(2000, MinimumLength = 1, ErrorMessage = "От 1 до 2000 символов")]
+        public string Content { get; set; } = string.Empty;
+
+        public int ForumTopicId { get; set; }
+    }
+}

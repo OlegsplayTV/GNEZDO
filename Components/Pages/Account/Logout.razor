@@ -1,0 +1,97 @@
+﻿@page "/Account/Logout"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components
+@using GNEZDO.Models
+@inject SignInManager<User> SignInManager
+@inject NavigationManager Navigation
+
+<PageTitle>Выход — ГНЕЗДО</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                    <h2 class="card-title text-center mb-4">👋 Выход из аккаунта</h2>
+
+                    @if (!string.IsNullOrEmpty(Message))
+                    {
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            @Message
+                            <button type="button" class="btn-close" @onclick="() => Message = null" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @ErrorMessage
+                            <button type="button" class="btn-close" @onclick="() => ErrorMessage = null" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <!-- Форма подтверждения выхода -->
+                    <EditForm Model="@LogoutModel" OnValidSubmit="HandleLogout" FormName="logout-form" data-enhance="false">
+                        <DataAnnotationsValidator />
+
+
+                        <div class="d-grid gap-2">
+                            <h3>Выход на данный момент недоступен</h3>
+                        </div>
+                    </EditForm>
+
+                    <hr class="my-4" />
+
+                    <div class="text-center text-muted">
+                        <h3 class="mb-0"><a href="/" class="text-decoration-none">← Вернуться на главную</a></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm(FormName = "logout-form")]
+    private LogoutDto LogoutModel { get; set; } = new();
+
+    private string? Message;
+    private string? ErrorMessage;
+
+    private async Task HandleLogout()
+    {
+        try
+        {
+            // Выход из системы через SignInManager
+            await SignInManager.SignOutAsync();
+
+            // Показываем сообщение об успехе
+            Message = "✅ Вы успешно вышли из аккаунта. Перенаправление...";
+
+            // Небольшая задержка, чтобы пользователь увидел сообщение
+            await Task.Delay(1000);
+
+            // Перенаправляем на главную с полной перезагрузкой
+            Navigation.NavigateTo("/", forceLoad: true);
+        }
+        catch (Exception ex) when (ex is not NavigationException)
+        {
+            Console.WriteLine($"[Logout] Error: {ex.Message}");
+            ErrorMessage = $"Ошибка при выходе: {ex.Message}";
+        }
+    }
+
+    private void CancelLogout()
+    {
+        // Возвращаем пользователя на главную без выхода
+        Navigation.NavigateTo("/", forceLoad: false);
+    }
+
+    // DTO для формы выхода (минимальный, но с возможностью расширения)
+    public class LogoutDto
+    {
+        // Можно добавить поля в будущем, например:
+        // [Required] public bool Confirm { get; set; }
+    }
+}

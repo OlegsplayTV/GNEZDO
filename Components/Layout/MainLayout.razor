@@ -1,0 +1,155 @@
+﻿@namespace GNEZDO.Components.Layout
+@inherits LayoutComponentBase
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using GNEZDO.Models
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@inject NavigationManager Navigation
+
+<!-- === ШАПКА С ГОРИЗОНТАЛЬНЫМ МЕНЮ === -->
+<header class="header">
+    <div class="header-container">
+        <a href="/" class="logo-link">
+            <img src="/img/logo.png" alt="ГНЕЗДО" class="logo-img" />
+        </a>
+
+        <!-- Меню навигации -->
+        <ul class="nav-menu">
+            <li>
+                <NavLink href="/" class="nav-link" Match="NavLinkMatch.All">
+                    <span class="bi bi-house-door-fill" aria-hidden="true"></span> Главная
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="articles" class="nav-link">
+                    <span class="bi bi-journal-text" aria-hidden="true"></span> Статьи
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="forum" class="nav-link">
+                    <span class="bi bi-chat-dots" aria-hidden="true"></span> Форум
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="specialists" class="nav-link">
+                    <span class="bi bi-people" aria-hidden="true"></span> Специалисты
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="about" class="nav-link">
+                    <span class="bi bi-info-circle" aria-hidden="true"></span> О проекте
+                </NavLink>
+            </li>
+        </ul>
+
+        <div class="auth-links">
+            @if (currentUser != null)
+            {
+                <!-- Пользователь вошёл -->
+                <span class="user-name">👋 @currentUser.FirstName @currentUser.LastName</span>
+                <a href="/Account/Logout" class="btn-logout">Выйти</a>
+            }
+            else
+            {
+                <!-- Пользователь не вошёл -->
+                <a href="/login" class="btn-login">Войти</a>
+                <a href="/register" class="btn-register">Регистрация</a>
+            }
+        </div>
+    </div>
+</header>
+
+<!-- === ОСНОВНОЙ КОНТЕНТ === -->
+<div class="page">
+    <main>
+        <article class="content container">
+            @Body
+        </article>
+    </main>
+</div>
+
+<!-- === ФУТЕР === -->
+<footer class="footer">
+    <p>© 2026 ГНЕЗДО — пространство для родителей и специалистов</p>
+</footer>
+
+@code {
+    private User? currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Подписываемся на изменения состояния аутентификации
+        AuthenticationStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
+        await LoadCurrentUser();
+    }
+
+    private void OnAuthStateChanged(Task<AuthenticationState> authStateTask)
+    {
+        // Когда состояние аутентификации меняется, перезагружаем данные пользователя
+        InvokeAsync(async () =>
+        {
+            await LoadCurrentUser();
+            StateHasChanged();
+        });
+    }
+
+    private async Task LoadCurrentUser()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                var email = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                if (!string.IsNullOrEmpty(email))
+                {
+                    currentUser = await UserManager.FindByEmailAsync(email);
+                }
+            }
+            else
+            {
+                currentUser = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MainLayout] Error loading user: {ex.Message}");
+            currentUser = null;
+        }
+    }
+
+    private async Task Logout()
+    {
+        try
+        {
+            // Выход из системы
+            await SignInManager.SignOutAsync();
+
+            // Очищаем локальное состояние
+            currentUser = null;
+
+            // Принудительно обновляем UI
+            StateHasChanged();
+
+            // Перезагружаем страницу полностью
+            Navigation.NavigateTo("/", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MainLayout] Logout error: {ex.Message}");
+            // Даже при ошибке перенаправляем
+            Navigation.NavigateTo("/", forceLoad: true);
+        }
+    }
+
+    public void Dispose()
+    {
+        AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthStateChanged;
+    }
+}

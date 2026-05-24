@@ -1,0 +1,101 @@
+﻿@page "/about"
+@inject NavigationManager Navigation
+
+<PageTitle>О проекте — ГНЕЗДО</PageTitle>
+
+<!-- === ЗАГОЛОВОК СТРАНИЦЫ === -->
+<div class="page-header">
+    <h1>🪺 О проекте</h1>
+</div>
+
+<!-- === ОСНОВНОЙ КОНТЕНТ === -->
+<div class="about-content">
+
+    <!-- Герой-блок с цитатой -->
+    <section class="about-hero block">
+        <blockquote class="about-quote">
+            <p class="quote-text">
+                «Гнездо» — это место, где родители могут выдохнуть.
+            </p>
+            <footer class="quote-author">— Команда ГНЕЗДО</footer>
+        </blockquote>
+    </section>
+
+    <!-- Основной текст -->
+    <section class="about-text block">
+        <div class="text-section">
+            <p class="lead-paragraph">
+                Мы знаем, как это бывает. Когда хочется закрыться в ванной на 15 минут тишины.
+                Когда сил нет даже на то, чтобы выбрать, что поесть.
+                Когда кажется, что ты одна во всём мире не справляешься.
+            </p>
+            <p class="highlight">
+                «Гнездо» создано для таких моментов.
+            </p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="text-section">
+            <h2>Здесь не учат, как «правильно» воспитывать детей</h2>
+            <p>
+                Здесь помогают найти опору, когда кажется, что её нет.
+            </p>
+            <p>
+                Мы помогаем вам!
+            </p>
+
+            <!-- Для кого этот проект -->
+            <ul class="audience-list">
+                <li>👩‍🍼 Мамы в декрете</li>
+                <li>👨‍👧 Папы-одиночки</li>
+                <li>👵👴 Бабушки и дедушки с внуками</li>
+                <li>🤝 Приёмные родители</li>
+                <li>💭 Те, кто только планирует ребёнка и уже тревожится</li>
+            </ul>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="text-section">
+            <h2>Почему «Гнездо»?</h2>
+            <p class="highlight">
+                Потому что гнездо — это место, куда возвращаются.
+                Где тепло, безопасно и принимают таким, какой ты есть.
+            </p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="text-section">
+            <h2>Мы только начинаем</h2>
+            <p>
+                Сейчас «Гнездо» — сайт. Дальше будет больше.
+                Но уже сейчас мы здесь, чтобы вы не были одиноки.
+            </p>
+
+            <!-- Финальный акцент -->
+            <div class="final-message">
+                <p class="final-text">
+                    <strong>Ты справляешься.</strong><br />
+                    А мы будем рядом. 💙
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Призыв к действию -->
+    <section class="about-cta block">
+        <h3>Готовы присоединиться?</h3>
+        <p>Начните с малого — прочтите статью или просто посмотрите, что у нас есть:</p>
+        <div class="cta-buttons">
+            <a href="/articles" class="btn btn-primary">Читать статьи</a>
+            <a href="/forum" class="btn btn-primary">Зайти на форум</a>
+        </div>
+    </section>
+
+</div>
+
+@code {
+    // Страница статическая, логика не требуется
+}

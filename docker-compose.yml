@@ -1,0 +1,32 @@
+﻿# docker-compose.yml
+services:
+  gnezdo-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gnezdo-web
+    ports:
+      - "8080:8080"
+      # - "8081:8081"  # HTTPS, если нужен
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/gnezdo.db
+    volumes:
+      - gnezdo-data:/app/data  # ← Только этот том для файла БД
+    restart: unless-stopped
+    networks:
+      - gnezdo-network
+    # depends_on убран — не нужен для SQLite
+
+# gnezdo-db сервис УДАЛЕН — SQLite не требует отдельного контейнера!
+
+volumes:
+  gnezdo-data:  # ← Только этот том нужен
+    driver: local
+  # gnezdo-db-data удалён — не используется
+
+networks:
+  gnezdo-network:
+    driver: bridge
+
+
